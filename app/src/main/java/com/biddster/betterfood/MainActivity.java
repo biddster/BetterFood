@@ -1,7 +1,12 @@
 package com.biddster.betterfood;
 
+import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.print.PrintAttributes;
+import android.print.PrintDocumentAdapter;
+import android.print.PrintManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -21,8 +26,21 @@ import java.util.Set;
 public class MainActivity extends AppCompatActivity {
 
     private final Set<String> allowedHosts = newHashSet("www.bbcgoodfood.com", "ajax.googleapis.com", "code.jquery.com");
+    private final Set<String> ignoredHosts = newHashSet(
+            "d3c3cq33003psk.cloudfront.net",
+            "widget.bbclogin.com",
+            "pq-direct.revsci.net",
+            "cdn.krxd.net",
+            "www.googletagservices.com",
+            "widgets.outbrain.com",
+            "b.scorecardresearch.com",
+            "www.google-analytics.com",
+            "d12au6kkv2cs1v.cloudfront.net",
+            "pagead2.googlesyndication.com",
+            "d2gfdmu30u15x7.cloudfront.net",
+            "js.foodity.com",
+            "api-us1.lift.acquia.com");
     private WebView webView;
-
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -40,10 +58,12 @@ public class MainActivity extends AppCompatActivity {
             public WebResourceResponse shouldInterceptRequest(final WebView view, final String url) {
                 try {
                     final URL aUrl = new URL(url);
-                    if (allowedHosts.contains(aUrl.getHost())) {
+                    if (!ignoredHosts.contains(aUrl.getHost())) {
+                        if (!allowedHosts.contains(aUrl.getHost())) {
+                            Log.d("NETWORK", "Loading: " + aUrl.getHost());
+                        }
                         return super.shouldInterceptRequest(view, url);
                     }
-                    Log.d("NETWORK", "Ignoring: " + url);
                     return new WebResourceResponse("text/html", "utf-8", null);
                 } catch (final MalformedURLException e) {
                     e.printStackTrace();
@@ -89,6 +109,13 @@ public class MainActivity extends AppCompatActivity {
             i.putExtra(Intent.EXTRA_SUBJECT, webView.getTitle());
             i.putExtra(Intent.EXTRA_TEXT, webView.getUrl());
             startActivity(Intent.createChooser(i, "Share - " + webView.getTitle()));
+        } else if (item.getItemId() == R.id.menu_item_print) {
+            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                final PrintManager printManager = (PrintManager) getSystemService(Context.PRINT_SERVICE);
+                final PrintDocumentAdapter printAdapter = webView.createPrintDocumentAdapter();
+                final String jobName = getString(R.string.app_name) + " Document";
+                printManager.print(jobName, printAdapter, new PrintAttributes.Builder().build());
+            }
         }
         return super.onOptionsItemSelected(item);
     }

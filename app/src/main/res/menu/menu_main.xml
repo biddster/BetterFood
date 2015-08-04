@@ -11,6 +11,12 @@
     <item
         android:id="@+id/menu_item_share"
         android:icon="@drawable/ic_share_white_48dp"
-        app:showAsAction="always"
-        android:title="" />
+        app:showAsAction="never"
+        android:title="Share" />
+
+    <item
+        android:id="@+id/menu_item_print"
+        android:icon="@drawable/ic_share_white_48dp"
+        app:showAsAction="never"
+        android:title="Print" />
 </menu>
