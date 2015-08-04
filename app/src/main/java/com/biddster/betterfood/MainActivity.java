@@ -1,10 +1,13 @@
 package com.biddster.betterfood;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Window;
+import android.webkit.WebChromeClient;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -23,8 +26,13 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
+        supportRequestWindowFeature(Window.FEATURE_PROGRESS);
+//        requestWindowFeature(Window.FEATURE_PROGRESS);
+        setProgressBarVisibility(true);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         webView = (WebView) findViewById(R.id.webView);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.setWebViewClient(new WebViewClient() {
@@ -41,6 +49,15 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
                 return null;
+            }
+        });
+        webView.setWebChromeClient(new WebChromeClient() {
+            public void onProgressChanged(final WebView view, final int progress) {
+                // Activities and WebViews measure progress with different scales.
+                // The progress meter will automatically disappear when we reach 100%
+                Log.d("NETWORK", "Progress: " + (progress * 100));
+//                MainActivity.this.setProgress(progress * 100);
+                getWindow().setFeatureInt(Window.FEATURE_PROGRESS, progress * 100);
             }
         });
         goHome();
@@ -66,6 +83,12 @@ public class MainActivity extends AppCompatActivity {
         if (item.getItemId() == R.id.action_home) {
             goHome();
             return true;
+        } else if (item.getItemId() == R.id.menu_item_share) {
+            final Intent i = new Intent(Intent.ACTION_SEND);
+            i.setType("text/plain");
+            i.putExtra(Intent.EXTRA_SUBJECT, webView.getTitle());
+            i.putExtra(Intent.EXTRA_TEXT, webView.getUrl());
+            startActivity(Intent.createChooser(i, "Share - " + webView.getTitle()));
         }
         return super.onOptionsItemSelected(item);
     }
