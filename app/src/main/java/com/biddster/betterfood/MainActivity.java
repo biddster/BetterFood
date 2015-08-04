@@ -3,6 +3,7 @@ package com.biddster.betterfood;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.print.PrintAttributes;
@@ -82,6 +83,14 @@ public class MainActivity extends AppCompatActivity {
                 return null;
             }
 
+            public boolean shouldOverrideUrlLoading(final WebView view, final String url) {
+                if (url.startsWith("mailto:")) {
+                    startActivity(new Intent(Intent.ACTION_SENDTO, Uri.parse(url)));
+                    return true;
+                }
+                return false;
+            }
+
             @Override
             public void onPageFinished(final WebView view, final String url) {
                 Log.d("NETWORK", "Loaded: " + url);
@@ -126,6 +135,7 @@ public class MainActivity extends AppCompatActivity {
             i.putExtra(Intent.EXTRA_SUBJECT, webView.getTitle());
             i.putExtra(Intent.EXTRA_TEXT, webView.getUrl());
             startActivity(Intent.createChooser(i, "Share - " + webView.getTitle()));
+            return true;
         } else if (item.getItemId() == R.id.menu_item_print) {
             if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                 final PrintManager printManager = (PrintManager) getSystemService(Context.PRINT_SERVICE);
@@ -133,6 +143,7 @@ public class MainActivity extends AppCompatActivity {
                 final String jobName = getString(R.string.app_name) + " Document";
                 printManager.print(jobName, printAdapter, new PrintAttributes.Builder().build());
             }
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
