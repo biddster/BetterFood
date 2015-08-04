@@ -1,5 +1,6 @@
 package com.biddster.betterfood;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
@@ -12,6 +13,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
@@ -41,7 +43,9 @@ public class MainActivity extends AppCompatActivity {
             "js.foodity.com",
             "api-us1.lift.acquia.com");
     private WebView webView;
+    private String printLink;
 
+    @SuppressLint("JavascriptInterface")
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         supportRequestWindowFeature(Window.FEATURE_PROGRESS);
@@ -53,6 +57,13 @@ public class MainActivity extends AppCompatActivity {
 
         webView = (WebView) findViewById(R.id.webView);
         webView.getSettings().setJavaScriptEnabled(true);
+        webView.addJavascriptInterface(new Object() {
+            @JavascriptInterface
+            public void setPrintLink(final String printLink) {
+                Log.d("PRINT", "PDF: " + printLink);
+                MainActivity.this.printLink = printLink;
+            }
+        }, "PRINTLINK");
         webView.setWebViewClient(new WebViewClient() {
 
             public WebResourceResponse shouldInterceptRequest(final WebView view, final String url) {
@@ -69,6 +80,12 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
                 return null;
+            }
+
+            @Override
+            public void onPageFinished(final WebView view, final String url) {
+                Log.d("NETWORK", "Loaded: " + url);
+                webView.loadUrl("javascript:window.PRINTLINK.setPrintLink(document.getElementsByClassName('btn-print')[0].href);");
             }
         });
         webView.setWebChromeClient(new WebChromeClient() {
