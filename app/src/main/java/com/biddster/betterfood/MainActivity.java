@@ -94,7 +94,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPageFinished(final WebView view, final String url) {
                 Log.d("NETWORK", "Loaded: " + url);
-                webView.loadUrl("javascript:window.PRINTLINK.setPrintLink(document.getElementsByClassName('btn-print')[0].href);");
+                webView.loadUrl("javascript:var el = document.getElementsByClassName('btn-print')[0]; if (el) {window.PRINTLINK.setPrintLink(el.href)};");
+                webView.loadUrl("javascript:jQuery('.tips-carousel,#buy-ingredients,.side-bar-content,.adsense-ads,#footer').hide()");
             }
         });
         webView.setWebChromeClient(new WebChromeClient() {
