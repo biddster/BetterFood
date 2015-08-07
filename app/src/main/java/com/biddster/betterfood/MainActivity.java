@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private String printLink;
 
-    @SuppressLint("JavascriptInterface")
+    @SuppressLint({"JavascriptInterface", "AddJavascriptInterface", "SetJavaScriptEnabled"})
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -101,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPageFinished(final WebView view, final String url) {
                 log(NETWORK, null, "Loaded: %s", url);
-                webView.loadUrl("javascript:var el = document.getElementsByClassName('btn-print')[0]; if (el) {window.PRINTLINK.setPrintLink(el.href)};");
+                webView.loadUrl("javascript:window.PRINTLINK.setPrintLink(jQuery('.btn-print:first').attr('href'));");
                 webView.loadUrl("javascript:jQuery('.tips-carousel,#buy-ingredients,.side-bar-content,.adsense-ads,#footer').hide()");
                 saveLastPage(url);
             }
