@@ -214,20 +214,20 @@ public class MainActivity extends AppCompatActivity {
     private void startDownload(final boolean open) {
         this.open = open;
         if (!TextUtils.isEmpty(printLink)) {
-            final String localPath = "/BetterFood/" + webView.getTitle() + ".pdf";
-            final File downloaded = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + localPath);
-            if (!downloaded.exists()) {
+            final File betterFoodDirectory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "BetterFood");
+            betterFoodDirectory.mkdirs();
+            final File download = new File(betterFoodDirectory, webView.getTitle() + ".pdf");
+            if (!download.exists()) {
                 final Uri uri = Uri.parse(goodFoodHome + printLink);
                 log(NETWORK, null, "Downloading [%s]", uri);
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).mkdirs();
                 lastDownload = downloadManager.enqueue(new DownloadManager.Request(uri)
                         .setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI | DownloadManager.Request.NETWORK_MOBILE)
                         .setAllowedOverRoaming(false)
                         .setTitle(webView.getTitle())
-                        .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, localPath));
+                        .setDestinationUri(Uri.parse(download.toURI().toString())));
             } else if (open) {
-                log(NETWORK, null, "Already downloaded [%s]", downloaded);
-                openPdf(Uri.parse(downloaded.toURI().toString()));
+                log(NETWORK, null, "Already downloaded [%s]", download);
+                openPdf(Uri.parse(download.toURI().toString()));
             } else {
                 Toast.makeText(this, "File already downloaded to Downloads directory, click 'View downloads' to view it.",
                         Toast.LENGTH_LONG).show();
