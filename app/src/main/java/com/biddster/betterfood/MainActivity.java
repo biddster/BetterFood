@@ -110,7 +110,6 @@ public class MainActivity extends AppCompatActivity {
         final Animation slideInTop = AnimationUtils.loadAnimation(this, R.anim.abc_slide_in_top);
         webView.setWebChromeClient(new WebChromeClient() {
             public void onProgressChanged(final WebView view, final int progress) {
-                log(NETWORK, null, "Progress [%d]", progress);
                 progressBar.setProgress(progress);
                 if (progress == 100) {
                     progressBar.startAnimation(slideOutTop);
