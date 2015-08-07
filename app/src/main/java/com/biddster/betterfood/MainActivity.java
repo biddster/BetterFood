@@ -24,6 +24,7 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -39,7 +40,8 @@ import static com.biddster.betterfood.Logger.log;
 
 public class MainActivity extends AppCompatActivity {
 
-    private final String goodFoodHome = "http://www.bbcgoodfood.com";
+    private static final String OPEN_AFTER_DOWNLOAD = MainActivity.class.getName() + ".OpenAfterDownload";
+    private static final String goodFoodHome = "http://www.bbcgoodfood.com";
     private final Set<String> allowedHosts = newHashSet("www.bbcgoodfood.com", "ajax.googleapis.com", "code.jquery.com");
     private final Set<String> ignoredHosts = newHashSet(
             "d3c3cq33003psk.cloudfront.net",
@@ -60,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
     private String printLink;
     private DownloadManager downloadManager;
     private long lastDownload;
+    private boolean open;
 
     @SuppressLint({"JavascriptInterface", "AddJavascriptInterface", "SetJavaScriptEnabled"})
     @Override
@@ -163,7 +166,10 @@ public class MainActivity extends AppCompatActivity {
             shareCurrentPage();
             return true;
         } else if (item.getItemId() == R.id.menu_item_print) {
-            printCurrentPage();
+            startDownload(true);
+            return true;
+        } else if (item.getItemId() == R.id.menu_item_download) {
+            startDownload(false);
             return true;
         } else if (item.getItemId() == R.id.menu_item_view_downloads) {
             viewDownloads();
@@ -182,10 +188,6 @@ public class MainActivity extends AppCompatActivity {
         i.putExtra(Intent.EXTRA_SUBJECT, webView.getTitle());
         i.putExtra(Intent.EXTRA_TEXT, webView.getUrl());
         startActivity(Intent.createChooser(i, "Share - " + webView.getTitle()));
-    }
-
-    private void printCurrentPage() {
-        startDownload();
     }
 
     private void saveLastPage(final String url) {
@@ -209,7 +211,8 @@ public class MainActivity extends AppCompatActivity {
         return set;
     }
 
-    private void startDownload() {
+    private void startDownload(final boolean open) {
+        this.open = open;
         if (!TextUtils.isEmpty(printLink)) {
             final String localPath = "/BetterFood/" + webView.getTitle() + ".pdf";
             final File downloaded = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + localPath);
@@ -222,9 +225,12 @@ public class MainActivity extends AppCompatActivity {
                         .setAllowedOverRoaming(false)
                         .setTitle(webView.getTitle())
                         .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, localPath));
-            } else {
+            } else if (open) {
                 log(NETWORK, null, "Already downloaded [%s]", downloaded);
                 openPdf(Uri.parse(downloaded.toURI().toString()));
+            } else {
+                Toast.makeText(this, "File already downloaded to Downloads directory, click 'View downloads' to view it.",
+                        Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -244,7 +250,13 @@ public class MainActivity extends AppCompatActivity {
             c.moveToFirst();
             final String localUri = c.getString(c.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI));
             log(NETWORK, null, "Downloaded to [%s]", localUri);
-            openPdf(Uri.parse(localUri));
+            final Uri uri = Uri.parse(localUri);
+            if (open) {
+                openPdf(uri);
+            } else {
+                Toast.makeText(MainActivity.this, "File downloaded to Downloads directory, click 'View downloads' to view it.",
+                        Toast.LENGTH_LONG).show();
+            }
         }
     };
 }

@@ -14,16 +14,16 @@
         app:showAsAction="never"
         android:title="Share" />
 
-    <!--<item-->
-        <!--android:id="@+id/menu_item_download"-->
-        <!--app:showAsAction="never"-->
-        <!--android:title="Download" />-->
-
     <item
         android:id="@+id/menu_item_print"
         android:icon="@drawable/ic_share_white_48dp"
         app:showAsAction="never"
         android:title="Print" />
+
+    <item
+        android:id="@+id/menu_item_download"
+        app:showAsAction="never"
+        android:title="Download" />
 
     <item
         android:id="@+id/menu_item_view_downloads"
