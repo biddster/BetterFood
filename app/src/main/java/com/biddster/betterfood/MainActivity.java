@@ -10,7 +10,6 @@ import android.print.PrintAttributes;
 import android.print.PrintDocumentAdapter;
 import android.print.PrintManager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
@@ -25,6 +24,10 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
+import static com.biddster.betterfood.Logger.NETWORK;
+import static com.biddster.betterfood.Logger.PRINT;
+import static com.biddster.betterfood.Logger.log;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -61,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
         webView.addJavascriptInterface(new Object() {
             @JavascriptInterface
             public void setPrintLink(final String printLink) {
-                Log.d("PRINT", "PDF: " + printLink);
+                log(PRINT, null, "PDF: %s", printLink);
                 MainActivity.this.printLink = printLink;
             }
         }, "PRINTLINK");
@@ -72,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
                     final URL aUrl = new URL(url);
                     if (!ignoredHosts.contains(aUrl.getHost())) {
                         if (!allowedHosts.contains(aUrl.getHost())) {
-                            Log.d("NETWORK", "Loading: " + aUrl.getHost());
+                            log(NETWORK, null, "Loading: %s", aUrl.getHost());
                         }
                         return super.shouldInterceptRequest(view, url);
                     }
@@ -93,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onPageFinished(final WebView view, final String url) {
-                Log.d("NETWORK", "Loaded: " + url);
+                log(NETWORK, null, "Loaded: %s", url);
                 webView.loadUrl("javascript:var el = document.getElementsByClassName('btn-print')[0]; if (el) {window.PRINTLINK.setPrintLink(el.href)};");
                 webView.loadUrl("javascript:jQuery('.tips-carousel,#buy-ingredients,.side-bar-content,.adsense-ads,#footer').hide()");
             }
@@ -102,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
             public void onProgressChanged(final WebView view, final int progress) {
                 // Activities and WebViews measure progress with different scales.
                 // The progress meter will automatically disappear when we reach 100%
-                Log.d("NETWORK", "Progress: " + (progress * 100));
+                log(NETWORK, null, "Progress: %d", (progress * 100));
 //                MainActivity.this.setProgress(progress * 100);
                 getWindow().setFeatureInt(Window.FEATURE_PROGRESS, progress * 100);
             }
