@@ -13,12 +13,15 @@ import android.print.PrintManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.Window;
+import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ProgressBar;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -49,18 +52,17 @@ public class MainActivity extends AppCompatActivity {
             "js.foodity.com",
             "api-us1.lift.acquia.com");
     private WebView webView;
+    private ProgressBar progressBar;
     private String printLink;
 
     @SuppressLint("JavascriptInterface")
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
-        supportRequestWindowFeature(Window.FEATURE_PROGRESS);
-//        requestWindowFeature(Window.FEATURE_PROGRESS);
-        setProgressBarVisibility(true);
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.GONE);
         webView = (WebView) findViewById(R.id.webView);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.addJavascriptInterface(new Object() {
@@ -104,13 +106,19 @@ public class MainActivity extends AppCompatActivity {
                 saveLastPage(url);
             }
         });
+        final Animation slideOutTop = AnimationUtils.loadAnimation(this, R.anim.abc_slide_out_top);
+        final Animation slideInTop = AnimationUtils.loadAnimation(this, R.anim.abc_slide_in_top);
         webView.setWebChromeClient(new WebChromeClient() {
             public void onProgressChanged(final WebView view, final int progress) {
-                // Activities and WebViews measure progress with different scales.
-                // The progress meter will automatically disappear when we reach 100%
-                log(NETWORK, null, "Progress: %d", (progress * 100));
-//                MainActivity.this.setProgress(progress * 100);
-                getWindow().setFeatureInt(Window.FEATURE_PROGRESS, progress * 100);
+                log(NETWORK, null, "Progress [%d]", progress);
+                progressBar.setProgress(progress);
+                if (progress == 100) {
+                    progressBar.startAnimation(slideOutTop);
+                    progressBar.setVisibility(View.GONE);
+                } else if (progressBar.getVisibility() == View.GONE) {
+                    progressBar.startAnimation(slideInTop);
+                    progressBar.setVisibility(View.VISIBLE);
+                }
             }
         });
         loadLastPage();
