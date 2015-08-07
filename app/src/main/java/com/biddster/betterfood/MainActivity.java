@@ -1,16 +1,18 @@
 package com.biddster.betterfood;
 
 import android.annotation.SuppressLint;
+import android.app.DownloadManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.print.PrintAttributes;
-import android.print.PrintDocumentAdapter;
-import android.print.PrintManager;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,6 +25,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
@@ -36,6 +39,7 @@ import static com.biddster.betterfood.Logger.log;
 
 public class MainActivity extends AppCompatActivity {
 
+    private final String goodFoodHome = "http://www.bbcgoodfood.com";
     private final Set<String> allowedHosts = newHashSet("www.bbcgoodfood.com", "ajax.googleapis.com", "code.jquery.com");
     private final Set<String> ignoredHosts = newHashSet(
             "d3c3cq33003psk.cloudfront.net",
@@ -54,6 +58,8 @@ public class MainActivity extends AppCompatActivity {
     private WebView webView;
     private ProgressBar progressBar;
     private String printLink;
+    private DownloadManager downloadManager;
+    private long lastDownload;
 
     @SuppressLint({"JavascriptInterface", "AddJavascriptInterface", "SetJavaScriptEnabled"})
     @Override
@@ -120,7 +126,17 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+        downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+        registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+
         loadLastPage();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(onComplete);
     }
 
     @Override
@@ -149,12 +165,15 @@ public class MainActivity extends AppCompatActivity {
         } else if (item.getItemId() == R.id.menu_item_print) {
             printCurrentPage();
             return true;
+        } else if (item.getItemId() == R.id.menu_item_view_downloads) {
+            viewDownloads();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
     private void goHome() {
-        webView.loadUrl("http://www.bbcgoodfood.com");
+        webView.loadUrl(goodFoodHome);
     }
 
     private void shareCurrentPage() {
@@ -166,12 +185,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void printCurrentPage() {
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            final PrintManager printManager = (PrintManager) getSystemService(Context.PRINT_SERVICE);
-            final PrintDocumentAdapter printAdapter = webView.createPrintDocumentAdapter();
-            final String jobName = getString(R.string.app_name) + " Document";
-            printManager.print(jobName, printAdapter, new PrintAttributes.Builder().build());
-        }
+        startDownload();
     }
 
     private void saveLastPage(final String url) {
@@ -180,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadLastPage() {
-        final String lastPage = getSharedPreferences().getString("LastPage", "http://www.bbcgoodfood.com");
+        final String lastPage = getSharedPreferences().getString("LastPage", goodFoodHome);
         log(PREFS, null, "Loading last page [%s]", lastPage);
         webView.loadUrl(lastPage);
     }
@@ -194,4 +208,43 @@ public class MainActivity extends AppCompatActivity {
         Collections.addAll(set, entries);
         return set;
     }
+
+    private void startDownload() {
+        if (!TextUtils.isEmpty(printLink)) {
+            final String localPath = "/BetterFood/" + webView.getTitle() + ".pdf";
+            final File downloaded = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + localPath);
+            if (!downloaded.exists()) {
+                final Uri uri = Uri.parse(goodFoodHome + printLink);
+                log(NETWORK, null, "Downloading [%s]", uri);
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).mkdirs();
+                lastDownload = downloadManager.enqueue(new DownloadManager.Request(uri)
+                        .setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI | DownloadManager.Request.NETWORK_MOBILE)
+                        .setAllowedOverRoaming(false)
+                        .setTitle(webView.getTitle())
+                        .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, localPath));
+            } else {
+                log(NETWORK, null, "Already downloaded [%s]", downloaded);
+                openPdf(Uri.parse(downloaded.toURI().toString()));
+            }
+        }
+    }
+
+    private void viewDownloads() {
+        startActivity(new Intent(DownloadManager.ACTION_VIEW_DOWNLOADS));
+    }
+
+    private void openPdf(final Uri uri) {
+        log(NETWORK, null, "Opening [%s]", uri);
+        startActivity(new Intent(Intent.ACTION_VIEW).setDataAndType(uri, "application/pdf"));
+    }
+
+    private final BroadcastReceiver onComplete = new BroadcastReceiver() {
+        public void onReceive(final Context ctxt, final Intent intent) {
+            final Cursor c = downloadManager.query(new DownloadManager.Query().setFilterById(lastDownload));
+            c.moveToFirst();
+            final String localUri = c.getString(c.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI));
+            log(NETWORK, null, "Downloaded to [%s]", localUri);
+            openPdf(Uri.parse(localUri));
+        }
+    };
 }

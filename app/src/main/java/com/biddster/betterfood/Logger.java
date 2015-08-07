@@ -2,7 +2,7 @@ package com.biddster.betterfood;
 
 import android.util.Log;
 
-public final class Logger {
+final class Logger {
 
     public static final String PREFS = "PREFS";
     public static final String PRINT = "PRINT";
