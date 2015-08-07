@@ -3,6 +3,7 @@ package com.biddster.betterfood;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,6 +27,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static com.biddster.betterfood.Logger.NETWORK;
+import static com.biddster.betterfood.Logger.PREFS;
 import static com.biddster.betterfood.Logger.PRINT;
 import static com.biddster.betterfood.Logger.log;
 
@@ -99,6 +101,7 @@ public class MainActivity extends AppCompatActivity {
                 log(NETWORK, null, "Loaded: %s", url);
                 webView.loadUrl("javascript:var el = document.getElementsByClassName('btn-print')[0]; if (el) {window.PRINTLINK.setPrintLink(el.href)};");
                 webView.loadUrl("javascript:jQuery('.tips-carousel,#buy-ingredients,.side-bar-content,.adsense-ads,#footer').hide()");
+                saveLastPage(url);
             }
         });
         webView.setWebChromeClient(new WebChromeClient() {
@@ -110,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
                 getWindow().setFeatureInt(Window.FEATURE_PROGRESS, progress * 100);
             }
         });
-        goHome();
+        loadLastPage();
     }
 
     @Override
@@ -134,19 +137,10 @@ public class MainActivity extends AppCompatActivity {
             goHome();
             return true;
         } else if (item.getItemId() == R.id.menu_item_share) {
-            final Intent i = new Intent(Intent.ACTION_SEND);
-            i.setType("text/plain");
-            i.putExtra(Intent.EXTRA_SUBJECT, webView.getTitle());
-            i.putExtra(Intent.EXTRA_TEXT, webView.getUrl());
-            startActivity(Intent.createChooser(i, "Share - " + webView.getTitle()));
+            shareCurrentPage();
             return true;
         } else if (item.getItemId() == R.id.menu_item_print) {
-            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                final PrintManager printManager = (PrintManager) getSystemService(Context.PRINT_SERVICE);
-                final PrintDocumentAdapter printAdapter = webView.createPrintDocumentAdapter();
-                final String jobName = getString(R.string.app_name) + " Document";
-                printManager.print(jobName, printAdapter, new PrintAttributes.Builder().build());
-            }
+            printCurrentPage();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -154,6 +148,38 @@ public class MainActivity extends AppCompatActivity {
 
     private void goHome() {
         webView.loadUrl("http://www.bbcgoodfood.com");
+    }
+
+    private void shareCurrentPage() {
+        final Intent i = new Intent(Intent.ACTION_SEND);
+        i.setType("text/plain");
+        i.putExtra(Intent.EXTRA_SUBJECT, webView.getTitle());
+        i.putExtra(Intent.EXTRA_TEXT, webView.getUrl());
+        startActivity(Intent.createChooser(i, "Share - " + webView.getTitle()));
+    }
+
+    private void printCurrentPage() {
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            final PrintManager printManager = (PrintManager) getSystemService(Context.PRINT_SERVICE);
+            final PrintDocumentAdapter printAdapter = webView.createPrintDocumentAdapter();
+            final String jobName = getString(R.string.app_name) + " Document";
+            printManager.print(jobName, printAdapter, new PrintAttributes.Builder().build());
+        }
+    }
+
+    private void saveLastPage(final String url) {
+        log(PREFS, null, "Saving page [%s]", url);
+        getSharedPreferences().edit().putString("LastPage", url).apply();
+    }
+
+    private void loadLastPage() {
+        final String lastPage = getSharedPreferences().getString("LastPage", "http://www.bbcgoodfood.com");
+        log(PREFS, null, "Loading last page [%s]", lastPage);
+        webView.loadUrl(lastPage);
+    }
+
+    private SharedPreferences getSharedPreferences() {
+        return getSharedPreferences("BF", Context.MODE_PRIVATE);
     }
 
     private Set<String> newHashSet(final String... entries) {

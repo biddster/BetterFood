@@ -4,7 +4,7 @@ import android.util.Log;
 
 public final class Logger {
 
-    public static final String UI = "UI";
+    public static final String PREFS = "PREFS";
     public static final String PRINT = "PRINT";
     public static final String NETWORK = "NETWORK";
 
