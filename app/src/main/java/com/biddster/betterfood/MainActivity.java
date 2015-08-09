@@ -44,7 +44,6 @@ import static com.biddster.betterfood.Logger.log;
 public class MainActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
-    private static final String OPEN_AFTER_DOWNLOAD = MainActivity.class.getName() + ".OpenAfterDownload";
     private static final String goodFoodHome = "http://www.bbcgoodfood.com";
     private static final String goodFoodHealthy = "http://www.bbcgoodfood.com/recipes/category/healthy";
     private static final String goodFoodFamilyAndKids = "http://www.bbcgoodfood.com/feature/family-and-kids";
@@ -69,41 +68,26 @@ public class MainActivity extends Activity
             "d2gfdmu30u15x7.cloudfront.net",
             "js.foodity.com",
             "api-us1.lift.acquia.com");
-
-    private static WebView webView;
-    private static ProgressBar progressBar;
-    private static String printLink;
-    private static DownloadManager downloadManager;
-    private static long lastDownload;
-    private static boolean open;
-    /**
-     * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
-     */
+    private WebView webView;
+    private ProgressBar progressBar;
+    private String printLink;
+    private DownloadManager downloadManager;
+    private long lastDownload;
+    private boolean open;
     private NavigationDrawerFragment mNavigationDrawerFragment;
-
-    /**
-     * Used to store the last screen title. For use in {@link #restoreActionBar()}.
-     */
     private CharSequence mTitle;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mNavigationDrawerFragment = (NavigationDrawerFragment)
-                getFragmentManager().findFragmentById(R.id.navigation_drawer);
-
-        //mNavigationDrawerFragment.hide();
+        mNavigationDrawerFragment = (NavigationDrawerFragment) getFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
-
-        // Set up the drawer.
-        mNavigationDrawerFragment.setUp(
-                R.id.navigation_drawer,
-                (DrawerLayout) findViewById(R.id.drawer_layout));
-
+        mNavigationDrawerFragment.setUp(R.id.navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout));
         mNavigationDrawerFragment.clearDrawer();
-        webView = (WebView)findViewById(R.id.webView);
+
+        webView = (WebView) findViewById(R.id.webView);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         progressBar.setVisibility(View.GONE);
         webView = (WebView) findViewById(R.id.webView);
@@ -112,7 +96,7 @@ public class MainActivity extends Activity
             @JavascriptInterface
             public void setPrintLink(final String printLink) {
                 log(PRINT, null, "PDF: %s", printLink);
-                MainActivity.printLink = printLink;
+                MainActivity.this.printLink = printLink;
             }
         }, "PRINTLINK");
         webView.setWebViewClient(new WebViewClient() {
@@ -144,8 +128,9 @@ public class MainActivity extends Activity
             @Override
             public void onPageFinished(final WebView view, final String url) {
                 log(NETWORK, null, "Loaded: %s", url);
+                webView.loadUrl("javascript:jQuery('#scroll-wrapper').css('padding-top', '0px');");
                 webView.loadUrl("javascript:window.PRINTLINK.setPrintLink(jQuery('.btn-print:first').attr('href'));");
-                webView.loadUrl("javascript:jQuery('.tips-carousel,#buy-ingredients,.side-bar-content,.adsense-ads,#footer').hide()");
+                webView.loadUrl("javascript:jQuery('.page-header-touch,.sharing-options,#nav-touch.tips-carousel,#buy-ingredients,.side-bar-content,.adsense-ads,#footer').hide()");
                 saveLastPage(url);
             }
         });
@@ -184,7 +169,6 @@ public class MainActivity extends Activity
 
     @Override
     public boolean onOptionsItemSelected(final MenuItem item) {
-        //noinspection SimplifiableIfStatement
         if (item.getItemId() == R.id.action_home) {
             goHome();
             return true;
@@ -238,7 +222,7 @@ public class MainActivity extends Activity
     }
 
     private void startDownload(final boolean open) {
-        MainActivity.open = open;
+        this.open = open;
         if (!TextUtils.isEmpty(printLink)) {
             final File betterFoodDirectory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "BetterFood");
             betterFoodDirectory.mkdirs();
@@ -259,10 +243,6 @@ public class MainActivity extends Activity
                         Toast.LENGTH_LONG).show();
             }
         }
-    }
-
-    private SharedPreferences getSharedPreferences() {
-        return getSharedPreferences("BF", Context.MODE_PRIVATE);
     }
 
     private void viewDownloads() {
@@ -291,11 +271,11 @@ public class MainActivity extends Activity
     };
 
     @Override
-    public void onNavigationDrawerItemSelected(int position) {
+    public void onNavigationDrawerItemSelected(final int position) {
         // update the main content by replacing fragments
-        switch (position){
+        switch (position) {
             case 0:
-                if(webView!=null)
+                if (webView != null)
                     webView.loadUrl(goodFoodHealthy);
                 break;
             case 1:
@@ -327,15 +307,17 @@ public class MainActivity extends Activity
         }
     }
 
-    public void restoreActionBar() {
-        ActionBar actionBar = getActionBar();
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-        actionBar.setDisplayShowTitleEnabled(true);
-        actionBar.setTitle(mTitle);
+    private void restoreActionBar() {
+        final ActionBar actionBar = getActionBar();
+        if (actionBar != null) {
+            actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+            actionBar.setDisplayShowTitleEnabled(true);
+            actionBar.setTitle(mTitle);
+        }
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(final Menu menu) {
         if (!mNavigationDrawerFragment.isDrawerOpen()) {
             // Only show items in the action bar relevant to this screen
             // if the drawer is not showing. Otherwise, let the drawer
