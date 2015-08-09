@@ -1,4 +1,21 @@
 <resources>
     <string name="app_name">Better Food</string>
     <string name="action_home">Home</string>
+    <string name="title_activity_main_page">MainPageActivity</string>
+
+    <string name="title_section1">Healthy</string>
+    <string name="title_section2">Family &amp; Kids</string>
+    <string name="title_section3">Cakes &amp; Backing</string>
+    <string name="title_section4">Cuisines</string>
+    <string name="title_section5">Dishes</string>
+    <string name="title_section6">Events</string>
+    <string name="title_section7">EveryDay</string>
+    <string name="title_section8">Ingredients</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_example">Example action</string>
+
+    <string name="action_settings">Settings</string>
 </resources>

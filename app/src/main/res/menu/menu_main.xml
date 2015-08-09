@@ -5,28 +5,28 @@
     <item
         android:id="@+id/action_home"
         android:icon="@drawable/ic_home_white_48dp"
-        app:showAsAction="always"
+        android:showAsAction="always"
         android:title="" />
 
     <item
         android:id="@+id/menu_item_share"
         android:icon="@drawable/ic_share_white_48dp"
-        app:showAsAction="never"
+        android:showAsAction="never"
         android:title="Share" />
 
     <item
         android:id="@+id/menu_item_print"
         android:icon="@drawable/ic_share_white_48dp"
-        app:showAsAction="never"
+        android:showAsAction="never"
         android:title="Print" />
 
     <item
         android:id="@+id/menu_item_download"
-        app:showAsAction="never"
+        android:showAsAction="never"
         android:title="Download" />
 
     <item
         android:id="@+id/menu_item_view_downloads"
-        app:showAsAction="never"
+        android:showAsAction="never"
         android:title="View downloads" />
 </menu>

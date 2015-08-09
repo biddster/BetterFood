@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.biddster.betterfood">
+    package="com.biddster.betterfood" >
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -9,13 +9,13 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme">
-        <!-- http://stackoverflow.com/questions/10924291/how-to-prevent-webview-auto-refresh-when-screen-rotation-->
+        android:theme="@style/AppTheme" >
+
+        <!-- http://stackoverflow.com/questions/10924291/how-to-prevent-webview-auto-refresh-when-screen-rotation -->
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|screenSize"
-            android:icon="@mipmap/ic_launcher"
-            android:label="@string/app_name">
+            android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
