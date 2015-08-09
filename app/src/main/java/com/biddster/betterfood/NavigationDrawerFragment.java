@@ -73,20 +73,6 @@ public class NavigationDrawerFragment extends Fragment {
                 selectItem(position);
             }
         });
-//        mDrawerListView.setAdapter(new ArrayAdapter<Pair>(
-//                getActionBar().getThemedContext(),
-//                android.R.layout.simple_list_item_activated_1,
-//                android.R.id.text1,
-//                new String[]{
-//                        getString(R.string.title_section1),
-//                        getString(R.string.title_section2),
-//                        getString(R.string.title_section3),
-//                        getString(R.string.title_section4),
-//                        getString(R.string.title_section5),
-//                        getString(R.string.title_section6),
-//                        getString(R.string.title_section7),
-//                        getString(R.string.title_section8),
-//                }));
         mDrawerListView.setAdapter(new PairArrayAdapter(getActionBar().getThemedContext(),
                 new Pair<>(getString(R.string.action_home), "http://www.bbcgoodfood.com/"),
                 new Pair<>(getString(R.string.title_section1), "http://www.bbcgoodfood.com/recipes/category/healthy"),
@@ -184,7 +170,7 @@ public class NavigationDrawerFragment extends Fragment {
             mDrawerListView.setItemChecked(position, true);
             if (mCallbacks != null) {
                 final Pair<String, String> item = ((PairArrayAdapter) mDrawerListView.getAdapter()).getItem(position);
-                mCallbacks.urlRequestedFromNavDrawer(item.second);
+                mCallbacks.loadUrl(item.second);
             }
         }
         if (mDrawerLayout != null) {
@@ -264,7 +250,7 @@ public class NavigationDrawerFragment extends Fragment {
          *
          * @param url
          */
-        void urlRequestedFromNavDrawer(final String url);
+        void loadUrl(final String url);
     }
 
     public void hide() {

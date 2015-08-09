@@ -263,7 +263,7 @@ public class MainActivity extends Activity
     };
 
     @Override
-    public void urlRequestedFromNavDrawer(final String url) {
+    public void loadUrl(final String url) {
         webView.loadUrl(url);
     }
 
