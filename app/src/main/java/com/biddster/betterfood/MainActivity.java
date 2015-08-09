@@ -41,8 +41,7 @@ import static com.biddster.betterfood.Logger.PRINT;
 import static com.biddster.betterfood.Logger.log;
 
 @SuppressLint({"JavascriptInterface", "AddJavascriptInterface", "SetJavaScriptEnabled"})
-public class MainActivity extends Activity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+public class MainActivity extends Activity implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
     private static final String goodFoodHome = "http://www.bbcgoodfood.com";
     private final Set<String> allowedHosts = newHashSet("www.bbcgoodfood.com", "ajax.googleapis.com", "code.jquery.com");
