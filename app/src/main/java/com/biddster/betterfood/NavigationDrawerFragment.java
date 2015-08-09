@@ -3,6 +3,7 @@ package com.biddster.betterfood;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -10,6 +11,7 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -19,33 +21,19 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 /**
  * Fragment used for managing interactions for and presentation of a navigation drawer.
  * See the <a href="https://developer.android.com/design/patterns/navigation-drawer.html#Interaction">
  * design guidelines</a> for a complete explanation of the behaviors implemented here.
  */
+@SuppressWarnings("unchecked")
 public class NavigationDrawerFragment extends Fragment {
 
-    /**
-     * Remember the position of the selected item.
-     */
     private static final String STATE_SELECTED_POSITION = "selected_navigation_drawer_position";
-
-    /**
-     * Per the design guidelines, you should show the drawer on launch until the user manually
-     * expands it. This shared preference tracks this.
-     */
     private static final String PREF_USER_LEARNED_DRAWER = "navigation_drawer_learned";
-
-    /**
-     * A pointer to the current callbacks instance (the Activity).
-     */
     private NavigationDrawerCallbacks mCallbacks;
-
-    /**
-     * Helper component that ties the action bar to the navigation drawer.
-     */
     private ActionBarDrawerToggle mDrawerToggle;
 
     private DrawerLayout mDrawerLayout;
@@ -56,23 +44,15 @@ public class NavigationDrawerFragment extends Fragment {
     private boolean mFromSavedInstanceState;
     private boolean mUserLearnedDrawer;
 
-    public NavigationDrawerFragment() {
-    }
-
     @Override
     public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Read in the flag indicating whether or not the user has demonstrated awareness of the
-        // drawer. See PREF_USER_LEARNED_DRAWER for details.
         final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
         mUserLearnedDrawer = sp.getBoolean(PREF_USER_LEARNED_DRAWER, false);
-
         if (savedInstanceState != null) {
             mCurrentSelectedPosition = savedInstanceState.getInt(STATE_SELECTED_POSITION);
             mFromSavedInstanceState = true;
         }
-
         // Select either the default item (0) or the last selected item.
         selectItem(mCurrentSelectedPosition);
     }
@@ -93,20 +73,30 @@ public class NavigationDrawerFragment extends Fragment {
                 selectItem(position);
             }
         });
-        mDrawerListView.setAdapter(new ArrayAdapter<String>(
-                getActionBar().getThemedContext(),
-                android.R.layout.simple_list_item_activated_1,
-                android.R.id.text1,
-                new String[]{
-                        getString(R.string.title_section1),
-                        getString(R.string.title_section2),
-                        getString(R.string.title_section3),
-                        getString(R.string.title_section4),
-                        getString(R.string.title_section5),
-                        getString(R.string.title_section6),
-                        getString(R.string.title_section7),
-                        getString(R.string.title_section8),
-                }));
+//        mDrawerListView.setAdapter(new ArrayAdapter<Pair>(
+//                getActionBar().getThemedContext(),
+//                android.R.layout.simple_list_item_activated_1,
+//                android.R.id.text1,
+//                new String[]{
+//                        getString(R.string.title_section1),
+//                        getString(R.string.title_section2),
+//                        getString(R.string.title_section3),
+//                        getString(R.string.title_section4),
+//                        getString(R.string.title_section5),
+//                        getString(R.string.title_section6),
+//                        getString(R.string.title_section7),
+//                        getString(R.string.title_section8),
+//                }));
+        mDrawerListView.setAdapter(new PairArrayAdapter(getActionBar().getThemedContext(),
+                new Pair<>(getString(R.string.action_home), "http://www.bbcgoodfood.com/"),
+                new Pair<>(getString(R.string.title_section1), "http://www.bbcgoodfood.com/recipes/category/healthy"),
+                new Pair<>(getString(R.string.title_section2), "http://www.bbcgoodfood.com/feature/family-and-kids"),
+                new Pair<>(getString(R.string.title_section3), "http://www.bbcgoodfood.com/recipes/category/cakes-baking"),
+                new Pair<>(getString(R.string.title_section4), "http://www.bbcgoodfood.com/recipes/category/cuisines"),
+                new Pair<>(getString(R.string.title_section5), "http://www.bbcgoodfood.com/recipes/category/dishes"),
+                new Pair<>(getString(R.string.title_section6), "http://www.bbcgoodfood.com/recipes/category/events"),
+                new Pair<>(getString(R.string.title_section7), "http://www.bbcgoodfood.com/recipes/category/everyday"),
+                new Pair<>(getString(R.string.title_section8), "http://www.bbcgoodfood.com/recipes/category/ingredients")));
         mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
         return mDrawerListView;
     }
@@ -192,12 +182,13 @@ public class NavigationDrawerFragment extends Fragment {
         mCurrentSelectedPosition = position;
         if (mDrawerListView != null) {
             mDrawerListView.setItemChecked(position, true);
+            if (mCallbacks != null) {
+                final Pair<String, String> item = ((PairArrayAdapter) mDrawerListView.getAdapter()).getItem(position);
+                mCallbacks.urlRequestedFromNavDrawer(item.second);
+            }
         }
         if (mDrawerLayout != null) {
             mDrawerLayout.closeDrawer(mFragmentContainerView);
-        }
-        if (mCallbacks != null) {
-            mCallbacks.onNavigationDrawerItemSelected(position);
         }
     }
 
@@ -270,8 +261,10 @@ public class NavigationDrawerFragment extends Fragment {
     public interface NavigationDrawerCallbacks {
         /**
          * Called when an item in the navigation drawer is selected.
+         *
+         * @param url
          */
-        void onNavigationDrawerItemSelected(int position);
+        void urlRequestedFromNavDrawer(final String url);
     }
 
     public void hide() {
@@ -282,5 +275,24 @@ public class NavigationDrawerFragment extends Fragment {
 
     public void clearDrawer() {
         mDrawerListView.clearChoices();
+    }
+
+    private static class PairArrayAdapter extends ArrayAdapter<Pair<String, String>> {
+
+        public PairArrayAdapter(final Context context, final Pair<String, String>... pairs) {
+            super(context, android.R.layout.simple_list_item_activated_1, pairs);
+        }
+
+        @Override
+        public View getView(final int position, View convertView, final ViewGroup parent) {
+            final Pair<String, String> object = super.getItem(position);
+            if (convertView == null) {
+                final int layoutResource = android.R.layout.simple_list_item_1;
+                convertView = LayoutInflater.from(getContext()).inflate(layoutResource, null);
+            }
+            final TextView tv = (TextView) convertView.findViewById(android.R.id.text1);
+            tv.setText(object.first);
+            return convertView;
+        }
     }
 }

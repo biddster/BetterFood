@@ -45,14 +45,6 @@ public class MainActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
     private static final String goodFoodHome = "http://www.bbcgoodfood.com";
-    private static final String goodFoodHealthy = "http://www.bbcgoodfood.com/recipes/category/healthy";
-    private static final String goodFoodFamilyAndKids = "http://www.bbcgoodfood.com/feature/family-and-kids";
-    private static final String goodFoodCakesAnBaking = "http://www.bbcgoodfood.com/recipes/category/cakes-baking";
-    private static final String goodFoodCuisines = "http://www.bbcgoodfood.com/recipes/category/cuisines";
-    private static final String goodFoodDishes = "http://www.bbcgoodfood.com/recipes/category/dishes";
-    private static final String goodFoodEvents = "http://www.bbcgoodfood.com/recipes/category/events";
-    private static final String goodFoodEveryDay = "http://www.bbcgoodfood.com/recipes/category/everyday";
-    private static final String goodFoodIngredients = "http://www.bbcgoodfood.com/recipes/category/ingredients";
     private final Set<String> allowedHosts = newHashSet("www.bbcgoodfood.com", "ajax.googleapis.com", "code.jquery.com");
     private final Set<String> ignoredHosts = newHashSet(
             "d3c3cq33003psk.cloudfront.net",
@@ -271,40 +263,8 @@ public class MainActivity extends Activity
     };
 
     @Override
-    public void onNavigationDrawerItemSelected(final int position) {
-        // update the main content by replacing fragments
-        switch (position) {
-            case 0:
-                if (webView != null)
-                    webView.loadUrl(goodFoodHealthy);
-                break;
-            case 1:
-                webView.loadUrl(goodFoodFamilyAndKids);
-                break;
-            case 2:
-                webView.loadUrl(goodFoodCakesAnBaking);
-                break;
-            case 3:
-                webView.loadUrl(goodFoodCuisines);
-                break;
-            case 4:
-                webView.loadUrl(goodFoodDishes);
-                break;
-            case 5:
-                webView.loadUrl(goodFoodEvents);
-                break;
-            case 6:
-                webView.loadUrl(goodFoodEveryDay);
-                break;
-            case 7:
-                webView.loadUrl(goodFoodIngredients);
-                break;
-            case 8:
-                webView.loadUrl(goodFoodHealthy);
-                break;
-            default:
-                break;
-        }
+    public void urlRequestedFromNavDrawer(final String url) {
+        webView.loadUrl(url);
     }
 
     private void restoreActionBar() {
