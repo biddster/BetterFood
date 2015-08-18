@@ -4,13 +4,16 @@ import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.DownloadManager;
+import android.app.SearchManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.widget.DrawerLayout;
@@ -26,6 +29,7 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
+import android.widget.SearchView;
 import android.widget.Toast;
 
 import java.io.File;
@@ -38,12 +42,14 @@ import java.util.Set;
 import static com.biddster.betterfood.Logger.NETWORK;
 import static com.biddster.betterfood.Logger.PREFS;
 import static com.biddster.betterfood.Logger.PRINT;
+import static com.biddster.betterfood.Logger.UIEVENT;
 import static com.biddster.betterfood.Logger.log;
 
 @SuppressLint({"JavascriptInterface", "AddJavascriptInterface", "SetJavaScriptEnabled"})
 public class MainActivity extends Activity implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
     private static final String goodFoodHome = "http://www.bbcgoodfood.com";
+    private static final String goodFoodSearch = "http://www.bbcgoodfood.com/search/recipes?query=";
     private final Set<String> allowedHosts = newHashSet("www.bbcgoodfood.com", "ajax.googleapis.com", "code.jquery.com");
     private final Set<String> ignoredHosts = newHashSet(
             "d3c3cq33003psk.cloudfront.net",
@@ -83,6 +89,13 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
         progressBar.setVisibility(View.GONE);
         webView = (WebView) findViewById(R.id.webView);
         webView.getSettings().setJavaScriptEnabled(true);
+
+        if(android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+            //Required to stop signal 11 (SIGSEGV) Crash when starting a search from the SearchView on the action bar.Disables hardware accelerate for WebView
+            //http://stackoverflow.com/questions/18520844/webview-causes-application-restart-fatal-signal-11-sigsegv
+            webView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        }
+
         webView.addJavascriptInterface(new Object() {
             @JavascriptInterface
             public void setPrintLink(final String printLink) {
@@ -114,6 +127,11 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
                     return true;
                 }
                 return false;
+            }
+
+            @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                log(NETWORK,null,"onPageStarted: [%s]",url);
             }
 
             @Override
@@ -263,7 +281,9 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 
     @Override
     public void loadUrl(final String url) {
+        log(NETWORK, null, "loadUrl");
         webView.loadUrl(url);
+//        new DownloadDomTask().execute(url);
     }
 
     private void restoreActionBar() {
@@ -283,8 +303,72 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
             // decide what to show in the action bar.
             getMenuInflater().inflate(R.menu.menu_main, menu);
             restoreActionBar();
+            final SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+            final SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
+            searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+            SearchView.OnQueryTextListener queryTextListener = new SearchView.OnQueryTextListener() {
+                public boolean onQueryTextChange(String newText) {
+//                    log(UIEVENT, null, "onQueryTextChange: [%s]",newText);
+                    return true;
+                }
+
+                public boolean onQueryTextSubmit(String query) {
+                    //Here u can get the value "query" which is entered in the search box.
+                    log(UIEVENT, null, "onQueryTextSubmit: [%s]", query);
+                    searchView.setQuery("", false);
+                    searchView.clearFocus(); // close the keyboard on load
+                    searchView.onActionViewCollapsed();
+                    webView.loadUrl(goodFoodSearch + query);
+                    return true;
+                }
+            };
+            searchView.setOnQueryTextListener(queryTextListener);
             return true;
         }
         return super.onCreateOptionsMenu(menu);
     }
+
+//    private class DownloadDomTask extends AsyncTask<String,Integer,Document> {
+//        // Do the long-running work in here
+//        @Override
+//        protected Document doInBackground(String... params) {
+//            Document doc=null;
+//            log(NETWORK,null,"URL to parse: [%s]",params[0]);
+//            try {
+//                String url = params[0];
+//                doc = Jsoup.connect(url)
+//                        .userAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.130 Safari/537.36")
+//                        .timeout(0)
+//                        .maxBodySize(0)
+//                        .get();
+//                //log(NETWORK,null,"DOM: [%s]",doc.toString());
+//            }catch(Exception ex){
+//                Log.e("ERROR","ERROR: " + ex.toString());
+//            }
+//            return doc;
+//        }
+//
+//        @Override
+//        protected void onProgressUpdate(Integer... values) {
+//            super.onProgressUpdate(values);
+//            Log.i("MainActivity", "onProgressUpdate(): " + String.valueOf(values[0]));
+//        }
+//            // This is called when doInBackground() is finished
+//        @Override
+//        protected void onPostExecute(Document result) {
+//            super.onPostExecute(result);
+//            Log.d("MainActivity", "onPostExecute");
+//            downloadDomTaskFinished(result);
+//        }
+//    }
+//
+//    public void downloadDomTaskFinished(Document dom){
+//        log(NETWORK, null, "downloadDomTaskFinished:");
+//        dom.select("div.page-header-touch").first().remove();
+////        log(NETWORK, null, "downloadDomTaskFinished: [%s]", dom.toString());
+////        webView.loadUrl("javascript:jQuery('#scroll-wrapper').css('padding-top', '0px');");
+////        webView.loadUrl("javascript:window.PRINTLINK.setPrintLink(jQuery('.btn-print:first').attr('href'));");
+////        webView.loadUrl("javascript:jQuery('.page-header-touch,.sharing-options,#nav-touch.tips-carousel,#buy-ingredients,.side-bar-content,.adsense-ads,#footer').hide()");
+//        webView.loadUrl(dom.outerHtml());
+//    }
 }
