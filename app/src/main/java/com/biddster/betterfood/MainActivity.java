@@ -283,7 +283,6 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
     public void loadUrl(final String url) {
         log(NETWORK, null, "loadUrl");
         webView.loadUrl(url);
-//        new DownloadDomTask().execute(url);
     }
 
     private void restoreActionBar() {
@@ -327,48 +326,4 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
         }
         return super.onCreateOptionsMenu(menu);
     }
-
-//    private class DownloadDomTask extends AsyncTask<String,Integer,Document> {
-//        // Do the long-running work in here
-//        @Override
-//        protected Document doInBackground(String... params) {
-//            Document doc=null;
-//            log(NETWORK,null,"URL to parse: [%s]",params[0]);
-//            try {
-//                String url = params[0];
-//                doc = Jsoup.connect(url)
-//                        .userAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.130 Safari/537.36")
-//                        .timeout(0)
-//                        .maxBodySize(0)
-//                        .get();
-//                //log(NETWORK,null,"DOM: [%s]",doc.toString());
-//            }catch(Exception ex){
-//                Log.e("ERROR","ERROR: " + ex.toString());
-//            }
-//            return doc;
-//        }
-//
-//        @Override
-//        protected void onProgressUpdate(Integer... values) {
-//            super.onProgressUpdate(values);
-//            Log.i("MainActivity", "onProgressUpdate(): " + String.valueOf(values[0]));
-//        }
-//            // This is called when doInBackground() is finished
-//        @Override
-//        protected void onPostExecute(Document result) {
-//            super.onPostExecute(result);
-//            Log.d("MainActivity", "onPostExecute");
-//            downloadDomTaskFinished(result);
-//        }
-//    }
-//
-//    public void downloadDomTaskFinished(Document dom){
-//        log(NETWORK, null, "downloadDomTaskFinished:");
-//        dom.select("div.page-header-touch").first().remove();
-////        log(NETWORK, null, "downloadDomTaskFinished: [%s]", dom.toString());
-////        webView.loadUrl("javascript:jQuery('#scroll-wrapper').css('padding-top', '0px');");
-////        webView.loadUrl("javascript:window.PRINTLINK.setPrintLink(jQuery('.btn-print:first').attr('href'));");
-////        webView.loadUrl("javascript:jQuery('.page-header-touch,.sharing-options,#nav-touch.tips-carousel,#buy-ingredients,.side-bar-content,.adsense-ads,#footer').hide()");
-//        webView.loadUrl(dom.outerHtml());
-//    }
 }
