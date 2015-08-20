@@ -55,9 +55,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
     private static final String goodFoodSearch = "http://www.bbcgoodfood.com/search/recipes?query=";
     private final Set<String> allowedHosts = newHashSet("www.bbcgoodfood.com", "ajax.googleapis.com", "code.jquery.com");
 
-
 //    "secure-au.imrworldwide.com",
-
     private final Set<String> ignoredHosts = newHashSet(
             "d3c3cq33003psk.cloudfront.net",
             "widget.bbclogin.com",
@@ -86,7 +84,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         if(BuildConfig.DEBUG) {
-            OkHttpClient client = new OkHttpClient();
+            final OkHttpClient client = new OkHttpClient();
             client.networkInterceptors().add(new StethoInterceptor());
         }
         mNavigationDrawerFragment = (NavigationDrawerFragment) getFragmentManager().findFragmentById(R.id.navigation_drawer);
@@ -114,7 +112,6 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
             }
         }, "PRINTLINK");
         webView.setWebViewClient(new WebViewClient() {
-
             public WebResourceResponse shouldInterceptRequest(final WebView view, final String url) {
                 try {
                     final URL aUrl = new URL(url);
@@ -140,7 +137,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
             }
 
             @Override
-            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+            public void onPageStarted(final WebView view, final String url, final Bitmap favicon) {
                 log(NETWORK,null,"onPageStarted: [%s]",url);
             }
 
@@ -171,7 +168,6 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
         });
         downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
         registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
-
         loadLastPage();
     }
 
@@ -317,13 +313,13 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
             final SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
             final SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
             searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-            SearchView.OnQueryTextListener queryTextListener = new SearchView.OnQueryTextListener() {
-                public boolean onQueryTextChange(String newText) {
+            final SearchView.OnQueryTextListener queryTextListener = new SearchView.OnQueryTextListener() {
+                public boolean onQueryTextChange(final String newText) {
 //                    log(UIEVENT, null, "onQueryTextChange: [%s]",newText);
                     return true;
                 }
 
-                public boolean onQueryTextSubmit(String query) {
+                public boolean onQueryTextSubmit(final String query) {
                     //Here u can get the value "query" which is entered in the search box.
                     log(UIEVENT, null, "onQueryTextSubmit: [%s]", query);
                     searchView.setQuery("", false);
