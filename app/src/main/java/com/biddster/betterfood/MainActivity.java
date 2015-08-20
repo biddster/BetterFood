@@ -32,6 +32,9 @@ import android.widget.ProgressBar;
 import android.widget.SearchView;
 import android.widget.Toast;
 
+import com.facebook.stetho.okhttp.StethoInterceptor;
+import com.squareup.okhttp.OkHttpClient;
+
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -51,6 +54,10 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
     private static final String goodFoodHome = "http://www.bbcgoodfood.com";
     private static final String goodFoodSearch = "http://www.bbcgoodfood.com/search/recipes?query=";
     private final Set<String> allowedHosts = newHashSet("www.bbcgoodfood.com", "ajax.googleapis.com", "code.jquery.com");
+
+
+//    "secure-au.imrworldwide.com",
+
     private final Set<String> ignoredHosts = newHashSet(
             "d3c3cq33003psk.cloudfront.net",
             "widget.bbclogin.com",
@@ -78,7 +85,10 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        if(BuildConfig.DEBUG) {
+            OkHttpClient client = new OkHttpClient();
+            client.networkInterceptors().add(new StethoInterceptor());
+        }
         mNavigationDrawerFragment = (NavigationDrawerFragment) getFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
         mNavigationDrawerFragment.setUp(R.id.navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout));
@@ -140,6 +150,8 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
                 webView.loadUrl("javascript:jQuery('#scroll-wrapper').css('padding-top', '0px');");
                 webView.loadUrl("javascript:window.PRINTLINK.setPrintLink(jQuery('.btn-print:first').attr('href'));");
                 webView.loadUrl("javascript:jQuery('.page-header-touch,.sharing-options,#nav-touch.tips-carousel,#buy-ingredients,.side-bar-content,.adsense-ads,#footer').hide()");
+                webView.loadUrl("javascript:jQuery('.nav-touch,.page-header-touch,#ad-mobile-banner,#ad-leader,#print-logo,#print-ad-leaderboard,#masthead,#nav-toolbar').remove()");
+                webView.loadUrl("javascript:jQuery('#bbcgf-search-form,.col span4,aside').remove()");
                 saveLastPage(url);
             }
         });
