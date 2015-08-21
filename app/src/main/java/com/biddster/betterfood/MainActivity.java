@@ -138,7 +138,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 
             @Override
             public void onPageStarted(final WebView view, final String url, final Bitmap favicon) {
-                log(NETWORK,null,"onPageStarted: [%s]",url);
+                log(NETWORK, null, "onPageStarted: [%s]", url);
             }
 
             @Override
@@ -148,7 +148,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
                 webView.loadUrl("javascript:window.PRINTLINK.setPrintLink(jQuery('.btn-print:first').attr('href'));");
                 webView.loadUrl("javascript:jQuery('.page-header-touch,.sharing-options,#nav-touch.tips-carousel,#buy-ingredients,.side-bar-content,.adsense-ads,#footer').hide()");
                 webView.loadUrl("javascript:jQuery('.nav-touch,.page-header-touch,#ad-mobile-banner,#ad-leader,#print-logo,#print-ad-leaderboard,#masthead,#nav-toolbar').remove()");
-                webView.loadUrl("javascript:jQuery('#bbcgf-search-form,.col span4,aside').remove()");
+                webView.loadUrl("javascript:jQuery('#bbcgf-search-form,.col span4,aside,#recipetools,#ad-mpu-top').remove()");
                 saveLastPage(url);
             }
         });
