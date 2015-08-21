@@ -45,7 +45,6 @@ import java.util.Set;
 import static com.biddster.betterfood.Logger.NETWORK;
 import static com.biddster.betterfood.Logger.PREFS;
 import static com.biddster.betterfood.Logger.PRINT;
-import static com.biddster.betterfood.Logger.UIEVENT;
 import static com.biddster.betterfood.Logger.log;
 
 @SuppressLint({"JavascriptInterface", "AddJavascriptInterface", "SetJavaScriptEnabled"})
@@ -54,8 +53,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
     private static final String goodFoodHome = "http://www.bbcgoodfood.com";
     private static final String goodFoodSearch = "http://www.bbcgoodfood.com/search/recipes?query=";
     private final Set<String> allowedHosts = newHashSet("www.bbcgoodfood.com", "ajax.googleapis.com", "code.jquery.com");
-
-//    "secure-au.imrworldwide.com",
+    //    "secure-au.imrworldwide.com",
     private final Set<String> ignoredHosts = newHashSet(
             "d3c3cq33003psk.cloudfront.net",
             "widget.bbclogin.com",
@@ -83,7 +81,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if(BuildConfig.DEBUG) {
+        if (BuildConfig.DEBUG) {
             final OkHttpClient client = new OkHttpClient();
             client.networkInterceptors().add(new StethoInterceptor());
         }
@@ -98,7 +96,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
         webView = (WebView) findViewById(R.id.webView);
         webView.getSettings().setJavaScriptEnabled(true);
 
-        if(android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
             //Required to stop signal 11 (SIGSEGV) Crash when starting a search from the SearchView on the action bar.Disables hardware accelerate for WebView
             //http://stackoverflow.com/questions/18520844/webview-causes-application-restart-fatal-signal-11-sigsegv
             webView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
@@ -321,7 +319,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 
                 public boolean onQueryTextSubmit(final String query) {
                     //Here u can get the value "query" which is entered in the search box.
-                    log(UIEVENT, null, "onQueryTextSubmit: [%s]", query);
+                    //log(UIEVENT, null, "onQueryTextSubmit: [%s]", query);
                     searchView.setQuery("", false);
                     searchView.clearFocus(); // close the keyboard on load
                     searchView.onActionViewCollapsed();
