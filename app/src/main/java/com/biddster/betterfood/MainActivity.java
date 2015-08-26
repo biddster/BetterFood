@@ -4,13 +4,16 @@ import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.DownloadManager;
+import android.app.SearchManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.widget.DrawerLayout;
@@ -26,7 +29,11 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
+import android.widget.SearchView;
 import android.widget.Toast;
+
+import com.facebook.stetho.okhttp.StethoInterceptor;
+import com.squareup.okhttp.OkHttpClient;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -44,7 +51,9 @@ import static com.biddster.betterfood.Logger.log;
 public class MainActivity extends Activity implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
     private static final String goodFoodHome = "http://www.bbcgoodfood.com";
+    private static final String goodFoodSearch = "http://www.bbcgoodfood.com/search/recipes?query=";
     private final Set<String> allowedHosts = newHashSet("www.bbcgoodfood.com", "ajax.googleapis.com", "code.jquery.com");
+    //    "secure-au.imrworldwide.com",
     private final Set<String> ignoredHosts = newHashSet(
             "d3c3cq33003psk.cloudfront.net",
             "widget.bbclogin.com",
@@ -72,7 +81,10 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        if (BuildConfig.DEBUG) {
+            final OkHttpClient client = new OkHttpClient();
+            client.networkInterceptors().add(new StethoInterceptor());
+        }
         mNavigationDrawerFragment = (NavigationDrawerFragment) getFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
         mNavigationDrawerFragment.setUp(R.id.navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout));
@@ -83,6 +95,13 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
         progressBar.setVisibility(View.GONE);
         webView = (WebView) findViewById(R.id.webView);
         webView.getSettings().setJavaScriptEnabled(true);
+
+        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+            //Required to stop signal 11 (SIGSEGV) Crash when starting a search from the SearchView on the action bar.Disables hardware accelerate for WebView
+            //http://stackoverflow.com/questions/18520844/webview-causes-application-restart-fatal-signal-11-sigsegv
+            webView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        }
+
         webView.addJavascriptInterface(new Object() {
             @JavascriptInterface
             public void setPrintLink(final String printLink) {
@@ -91,7 +110,6 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
             }
         }, "PRINTLINK");
         webView.setWebViewClient(new WebViewClient() {
-
             public WebResourceResponse shouldInterceptRequest(final WebView view, final String url) {
                 try {
                     final URL aUrl = new URL(url);
@@ -117,11 +135,18 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
             }
 
             @Override
+            public void onPageStarted(final WebView view, final String url, final Bitmap favicon) {
+                log(NETWORK, null, "onPageStarted: [%s]", url);
+            }
+
+            @Override
             public void onPageFinished(final WebView view, final String url) {
                 log(NETWORK, null, "Loaded: %s", url);
                 webView.loadUrl("javascript:jQuery('#scroll-wrapper').css('padding-top', '0px');");
                 webView.loadUrl("javascript:window.PRINTLINK.setPrintLink(jQuery('.btn-print:first').attr('href'));");
                 webView.loadUrl("javascript:jQuery('.page-header-touch,.sharing-options,#nav-touch.tips-carousel,#buy-ingredients,.side-bar-content,.adsense-ads,#footer').hide()");
+                webView.loadUrl("javascript:jQuery('.nav-touch,.page-header-touch,#ad-mobile-banner,#ad-leader,#print-logo,#print-ad-leaderboard,#masthead,#nav-toolbar').remove()");
+                webView.loadUrl("javascript:jQuery('#bbcgf-search-form,.col span4,aside,#recipetools,#ad-mpu-top').remove()");
                 saveLastPage(url);
             }
         });
@@ -141,7 +166,6 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
         });
         downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
         registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
-
         loadLastPage();
     }
 
@@ -263,6 +287,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
 
     @Override
     public void loadUrl(final String url) {
+        log(NETWORK, null, "loadUrl");
         webView.loadUrl(url);
     }
 
@@ -283,6 +308,26 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
             // decide what to show in the action bar.
             getMenuInflater().inflate(R.menu.menu_main, menu);
             restoreActionBar();
+            final SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+            final SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
+            searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+            final SearchView.OnQueryTextListener queryTextListener = new SearchView.OnQueryTextListener() {
+                public boolean onQueryTextChange(final String newText) {
+//                    log(UIEVENT, null, "onQueryTextChange: [%s]",newText);
+                    return true;
+                }
+
+                public boolean onQueryTextSubmit(final String query) {
+                    //Here u can get the value "query" which is entered in the search box.
+                    //log(UIEVENT, null, "onQueryTextSubmit: [%s]", query);
+                    searchView.setQuery("", false);
+                    searchView.clearFocus(); // close the keyboard on load
+                    searchView.onActionViewCollapsed();
+                    webView.loadUrl(goodFoodSearch + query);
+                    return true;
+                }
+            };
+            searchView.setOnQueryTextListener(queryTextListener);
             return true;
         }
         return super.onCreateOptionsMenu(menu);

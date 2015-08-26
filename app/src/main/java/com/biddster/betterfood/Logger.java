@@ -7,7 +7,7 @@ final class Logger {
     public static final String PREFS = "PREFS";
     public static final String PRINT = "PRINT";
     public static final String NETWORK = "NETWORK";
-
+    public static final String UIEVENT = "UI Event";
     private static final String TAG_PREFIX = "BF|";
 
     private Logger() {

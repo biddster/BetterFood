@@ -2,6 +2,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".MainActivity">
+    <item android:id="@+id/search"
+          android:title="@string/search_title"
+          android:icon="@drawable/ic_search_white_24dp"
+          android:showAsAction="ifRoom"
+          android:actionViewClass="android.widget.SearchView" />
+
     <item
         android:id="@+id/action_home"
         android:icon="@drawable/ic_home_white_48dp"
@@ -12,21 +18,21 @@
         android:id="@+id/menu_item_share"
         android:icon="@drawable/ic_share_white_48dp"
         android:showAsAction="never"
-        android:title="Share" />
+        android:title="@string/share" />
 
     <item
         android:id="@+id/menu_item_print"
         android:icon="@drawable/ic_share_white_48dp"
         android:showAsAction="never"
-        android:title="Print" />
+        android:title="@string/Print" />
 
     <item
         android:id="@+id/menu_item_download"
         android:showAsAction="never"
-        android:title="Download" />
+        android:title="@string/Download" />
 
     <item
         android:id="@+id/menu_item_view_downloads"
         android:showAsAction="never"
-        android:title="View downloads" />
+        android:title="@string/view_downloads" />
 </menu>
