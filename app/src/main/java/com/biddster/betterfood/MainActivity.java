@@ -12,10 +12,12 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.support.v4.widget.DrawerLayout;
 import android.text.TextUtils;
 import android.view.Menu;
@@ -85,16 +87,16 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
             final OkHttpClient client = new OkHttpClient();
             client.networkInterceptors().add(new StethoInterceptor());
         }
-        mNavigationDrawerFragment = (NavigationDrawerFragment) getFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
+        mNavigationDrawerFragment = (NavigationDrawerFragment) getFragmentManager().findFragmentById(R.id.navigation_drawer);
         mNavigationDrawerFragment.setUp(R.id.navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout));
         mNavigationDrawerFragment.clearDrawer();
 
         webView = (WebView) findViewById(R.id.webView);
+        webView.getSettings().setJavaScriptEnabled(true);
+        webView.setBackgroundColor(Color.WHITE);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         progressBar.setVisibility(View.GONE);
-        webView = (WebView) findViewById(R.id.webView);
-        webView.getSettings().setJavaScriptEnabled(true);
 
         if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
             //Required to stop signal 11 (SIGSEGV) Crash when starting a search from the SearchView on the action bar.Disables hardware accelerate for WebView
@@ -109,6 +111,23 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
                 MainActivity.this.printLink = printLink;
             }
         }, "PRINTLINK");
+        final Animation fadeIn = AnimationUtils.loadAnimation(this, R.anim.fade_in);
+        final Animation fadeOut = AnimationUtils.loadAnimation(this, R.anim.fade_out);
+        webView.addJavascriptInterface(new Object() {
+            final Handler handler = new Handler();
+
+            @JavascriptInterface
+            public void showWebView() {
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        log(PRINT, null, "Showing");
+                        webView.startAnimation(fadeIn);
+                        webView.setVisibility(View.VISIBLE);
+                    }
+                }, 500);
+            }
+        }, "FINISHED");
         webView.setWebViewClient(new WebViewClient() {
             public WebResourceResponse shouldInterceptRequest(final WebView view, final String url) {
                 try {
@@ -137,19 +156,23 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
             @Override
             public void onPageStarted(final WebView view, final String url, final Bitmap favicon) {
                 log(NETWORK, null, "onPageStarted: [%s]", url);
+                webView.startAnimation(fadeOut);
+                webView.setVisibility(View.INVISIBLE);
             }
 
             @Override
             public void onPageFinished(final WebView view, final String url) {
                 log(NETWORK, null, "Loaded: %s", url);
-                webView.loadUrl("javascript:jQuery('#scroll-wrapper').css('padding-top', '0px');");
-                webView.loadUrl("javascript:window.PRINTLINK.setPrintLink(jQuery('.btn-print:first').hide().attr('href'));");
-                webView.loadUrl("javascript:jQuery('.page-header-touch,.sharing-options,#nav-touch.tips-carousel," +
+                saveLastPage(url);
+                webView.loadUrl("javascript:jQuery('#recipe-content').addClass('span12');" +
+                        "jQuery('#scroll-wrapper').css('padding-top', '0px');" +
+                        "jQuery('.main-container').css('margin-top', '0px');" +
+                        "window.PRINTLINK.setPrintLink(jQuery('.btn-print:first').hide().attr('href'));" +
+                        "jQuery('.page-header-touch,.sharing-options,#nav-touch.tips-carousel," +
                         "#buy-ingredients,.side-bar-content,.adsense-ads,#footer,.nav-touch,.page-header-touch," +
                         "#ad-mobile-banner,#ad-leader,#print-logo,#print-ad-leaderboard,#masthead,#nav-toolbar" +
-                        "#bbcgf-search-form,.col span4,aside,#recipetools,#ad-mpu-top').remove()");
-                webView.loadUrl("javascript:jQuery('#recipe-content').addClass('span12');");
-                saveLastPage(url);
+                        "#bbcgf-search-form,.col span4,aside,#recipetools,#ad-mpu-top').remove();" +
+                        "window.FINISHED.showWebView();");
             }
         });
         final Animation slideOutTop = AnimationUtils.loadAnimation(this, R.anim.abc_slide_out_top);
