@@ -35,6 +35,7 @@ import android.widget.SearchView;
 import android.widget.Toast;
 
 import com.facebook.stetho.okhttp.StethoInterceptor;
+import com.github.lzyzsd.circleprogress.DonutProgress;
 import com.squareup.okhttp.OkHttpClient;
 
 import java.io.File;
@@ -71,7 +72,6 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
             "js.foodity.com",
             "api-us1.lift.acquia.com");
     private WebView webView;
-    private ProgressBar progressBar;
     private String printLink;
     private DownloadManager downloadManager;
     private long lastDownload;
@@ -95,8 +95,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
         webView = (WebView) findViewById(R.id.webView);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.setBackgroundColor(Color.WHITE);
-        progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        progressBar.setVisibility(View.GONE);
+
 
         if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
             //Required to stop signal 11 (SIGSEGV) Crash when starting a search from the SearchView on the action bar.Disables hardware accelerate for WebView
@@ -111,17 +110,16 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
                 MainActivity.this.printLink = printLink;
             }
         }, "PRINTLINK");
+
         final Animation fadeIn = AnimationUtils.loadAnimation(this, R.anim.fade_in);
         final Animation fadeOut = AnimationUtils.loadAnimation(this, R.anim.fade_out);
+        final Handler handler = new Handler();
         webView.addJavascriptInterface(new Object() {
-            final Handler handler = new Handler();
-
             @JavascriptInterface
             public void showWebView() {
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        log(PRINT, null, "Showing");
                         webView.startAnimation(fadeIn);
                         webView.setVisibility(View.VISIBLE);
                     }
@@ -175,18 +173,10 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
                         "window.FINISHED.showWebView();");
             }
         });
-        final Animation slideOutTop = AnimationUtils.loadAnimation(this, R.anim.abc_slide_out_top);
-        final Animation slideInTop = AnimationUtils.loadAnimation(this, R.anim.abc_slide_in_top);
+        final DonutProgress donutProgress = (DonutProgress) findViewById(R.id.donut_progress);
         webView.setWebChromeClient(new WebChromeClient() {
             public void onProgressChanged(final WebView view, final int progress) {
-                progressBar.setProgress(progress);
-                if (progress == 100) {
-                    progressBar.startAnimation(slideOutTop);
-                    progressBar.setVisibility(View.GONE);
-                } else if (progressBar.getVisibility() == View.GONE) {
-                    progressBar.startAnimation(slideInTop);
-                    progressBar.setVisibility(View.VISIBLE);
-                }
+                donutProgress.setProgress(progress);
             }
         });
         downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
