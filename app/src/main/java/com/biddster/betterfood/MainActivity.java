@@ -30,7 +30,6 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.ProgressBar;
 import android.widget.SearchView;
 import android.widget.Toast;
 
@@ -96,6 +95,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
         webView.getSettings().setJavaScriptEnabled(true);
         webView.setBackgroundColor(Color.WHITE);
 
+        final View progressView = findViewById(R.id.progress_view);
 
         if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
             //Required to stop signal 11 (SIGSEGV) Crash when starting a search from the SearchView on the action bar.Disables hardware accelerate for WebView
@@ -120,8 +120,8 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        webView.startAnimation(fadeIn);
-                        webView.setVisibility(View.VISIBLE);
+                        progressView.startAnimation(fadeOut);
+                        progressView.setVisibility(View.INVISIBLE);
                     }
                 }, 500);
             }
@@ -154,8 +154,8 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
             @Override
             public void onPageStarted(final WebView view, final String url, final Bitmap favicon) {
                 log(NETWORK, null, "onPageStarted: [%s]", url);
-                webView.startAnimation(fadeOut);
-                webView.setVisibility(View.INVISIBLE);
+                progressView.startAnimation(fadeIn);
+                progressView.setVisibility(View.VISIBLE);
             }
 
             @Override

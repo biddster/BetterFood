@@ -4,4 +4,8 @@
         <!-- Customize your theme here. -->
     </style>
 
+    <color name="progressBackground">#f2e3ed</color>
+    <color name="progressFinishedColour">#448e5d</color>
+    <color name="progressTextColour">#3e8054</color>
+
 </resources>
