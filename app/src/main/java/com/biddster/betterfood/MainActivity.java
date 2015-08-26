@@ -162,7 +162,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
             public void onPageFinished(final WebView view, final String url) {
                 log(NETWORK, null, "Loaded: %s", url);
                 saveLastPage(url);
-                webView.loadUrl("javascript:jQuery('#recipe-content').addClass('span12');" +
+                webView.loadUrl("javascript:jQuery('#recipe-content,#search-main > .row > .col').addClass('span12');" +
                         "jQuery('#scroll-wrapper').css('padding-top', '0px');" +
                         "jQuery('.main-container').css('margin-top', '0px');" +
                         "window.PRINTLINK.setPrintLink(jQuery('.btn-print:first').hide().attr('href'));" +
