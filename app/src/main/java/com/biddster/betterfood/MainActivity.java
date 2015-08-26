@@ -143,10 +143,12 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
             public void onPageFinished(final WebView view, final String url) {
                 log(NETWORK, null, "Loaded: %s", url);
                 webView.loadUrl("javascript:jQuery('#scroll-wrapper').css('padding-top', '0px');");
-                webView.loadUrl("javascript:window.PRINTLINK.setPrintLink(jQuery('.btn-print:first').attr('href'));");
-                webView.loadUrl("javascript:jQuery('.page-header-touch,.sharing-options,#nav-touch.tips-carousel,#buy-ingredients,.side-bar-content,.adsense-ads,#footer').hide()");
-                webView.loadUrl("javascript:jQuery('.nav-touch,.page-header-touch,#ad-mobile-banner,#ad-leader,#print-logo,#print-ad-leaderboard,#masthead,#nav-toolbar').remove()");
-                webView.loadUrl("javascript:jQuery('#bbcgf-search-form,.col span4,aside,#recipetools,#ad-mpu-top').remove()");
+                webView.loadUrl("javascript:window.PRINTLINK.setPrintLink(jQuery('.btn-print:first').hide().attr('href'));");
+                webView.loadUrl("javascript:jQuery('.page-header-touch,.sharing-options,#nav-touch.tips-carousel," +
+                        "#buy-ingredients,.side-bar-content,.adsense-ads,#footer,.nav-touch,.page-header-touch," +
+                        "#ad-mobile-banner,#ad-leader,#print-logo,#print-ad-leaderboard,#masthead,#nav-toolbar" +
+                        "#bbcgf-search-form,.col span4,aside,#recipetools,#ad-mpu-top').remove()");
+                webView.loadUrl("javascript:jQuery('#recipe-content').addClass('span12');");
                 saveLastPage(url);
             }
         });
