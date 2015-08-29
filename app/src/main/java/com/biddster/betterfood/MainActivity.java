@@ -117,13 +117,15 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
         webView.addJavascriptInterface(new Object() {
             @JavascriptInterface
             public void showWebView() {
+                // Time here is eyeballed. It's the time that makes the load clean on a Xoom.
+                // In conjunction with the fade in animation, combined they should be about a second.
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         progressView.startAnimation(fadeOut);
                         progressView.setVisibility(View.INVISIBLE);
                     }
-                }, 500);
+                }, 750);
             }
         }, "FINISHED");
         webView.setWebViewClient(new WebViewClient() {
@@ -164,12 +166,14 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
                 saveLastPage(url);
                 webView.loadUrl("javascript:jQuery('#recipe-content,#search-main > .row > .col').addClass('span12');" +
                         "jQuery('#scroll-wrapper').css('padding-top', '0px');" +
+                        "jQuery('.search-header-bar').css('top', '0px');" +
                         "jQuery('.main-container').css('margin-top', '0px');" +
-                        "window.PRINTLINK.setPrintLink(jQuery('.btn-print:first').hide().attr('href'));" +
+                        "jQuery('#more-info-button').click();" +
                         "jQuery('.page-header-touch,.sharing-options,#nav-touch.tips-carousel," +
                         "#buy-ingredients,.side-bar-content,.adsense-ads,#footer,.nav-touch,.page-header-touch," +
                         "#ad-mobile-banner,#ad-leader,#print-logo,#print-ad-leaderboard,#masthead,#nav-toolbar" +
                         "#bbcgf-search-form,.col span4,aside,#recipetools,#ad-mpu-top').remove();" +
+                        "window.PRINTLINK.setPrintLink(jQuery('.btn-print:first').hide().attr('href'));" +
                         "window.FINISHED.showWebView();");
             }
         });
