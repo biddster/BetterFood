@@ -164,7 +164,9 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
             public void onPageFinished(final WebView view, final String url) {
                 log(NETWORK, null, "Loaded: %s", url);
                 saveLastPage(url);
-                webView.loadUrl("javascript:jQuery('#recipe-content,#search-main > .row > .col').addClass('span12');" +
+                // TODO - should probably insert a style node into the DOM for the CSS changes.
+                webView.loadUrl(
+                        "javascript:jQuery('#recipe-content,#search-main > .row > .col').addClass('span12');" +
                         "jQuery('#scroll-wrapper').css('padding-top', '0px');" +
                         "jQuery('.search-header-bar').css('top', '0px');" +
                         "jQuery('.main-container').css('margin-top', '0px');" +
@@ -174,7 +176,8 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
                         "#ad-mobile-banner,#ad-leader,#print-logo,#print-ad-leaderboard,#masthead,#nav-toolbar" +
                         "#bbcgf-search-form,.col span4,aside,#recipetools,#ad-mpu-top').remove();" +
                         "window.PRINTLINK.setPrintLink(jQuery('.btn-print:first').hide().attr('href'));" +
-                        "window.FINISHED.showWebView();");
+                                "window.FINISHED.showWebView();"
+                );
             }
         });
         final DonutProgress donutProgress = (DonutProgress) findViewById(R.id.donut_progress);
