@@ -48,6 +48,7 @@ import static com.biddster.betterfood.Logger.NETWORK;
 import static com.biddster.betterfood.Logger.PREFS;
 import static com.biddster.betterfood.Logger.PRINT;
 import static com.biddster.betterfood.Logger.log;
+import static com.biddster.betterfood.Logger.logException;
 
 @SuppressLint({"JavascriptInterface", "AddJavascriptInterface", "SetJavaScriptEnabled"})
 public class MainActivity extends Activity implements NavigationDrawerFragment.NavigationDrawerCallbacks {
@@ -140,7 +141,7 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
                     }
                     return new WebResourceResponse("text/html", "utf-8", null);
                 } catch (final MalformedURLException e) {
-                    e.printStackTrace();
+                    logException(e);
                 }
                 return null;
             }
@@ -167,15 +168,15 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
                 // TODO - should probably insert a style node into the DOM for the CSS changes.
                 webView.loadUrl(
                         "javascript:jQuery('#recipe-content,#search-main > .row > .col').addClass('span12');" +
-                        "jQuery('#scroll-wrapper').css('padding-top', '0px');" +
-                        "jQuery('.search-header-bar').css('top', '0px');" +
-                        "jQuery('.main-container').css('margin-top', '0px');" +
-                        "jQuery('#more-info-button').click();" +
-                        "jQuery('.page-header-touch,.sharing-options,#nav-touch.tips-carousel," +
-                        "#buy-ingredients,.side-bar-content,.adsense-ads,#footer,.nav-touch,.page-header-touch," +
-                        "#ad-mobile-banner,#ad-leader,#print-logo,#print-ad-leaderboard,#masthead,#nav-toolbar" +
-                        "#bbcgf-search-form,.col span4,aside,#recipetools,#ad-mpu-top').remove();" +
-                        "window.PRINTLINK.setPrintLink(jQuery('.btn-print:first').hide().attr('href'));" +
+                                "jQuery('#scroll-wrapper').css('padding-top', '0px');" +
+                                "jQuery('.search-header-bar').css('top', '0px');" +
+                                "jQuery('.main-container').css('margin-top', '0px');" +
+                                "jQuery('#more-info-button').click();" +
+                                "jQuery('.page-header-touch,.sharing-options,#nav-touch.tips-carousel," +
+                                "#buy-ingredients,.side-bar-content,.adsense-ads,#footer,.nav-touch,.page-header-touch," +
+                                "#ad-mobile-banner,#ad-leader,#print-logo,#print-ad-leaderboard,#masthead,#nav-toolbar" +
+                                "#bbcgf-search-form,.col span4,aside,#recipetools,#ad-mpu-top').remove();" +
+                                "window.PRINTLINK.setPrintLink(jQuery('.btn-print:first').hide().attr('href'));" +
                                 "window.FINISHED.showWebView();"
                 );
             }

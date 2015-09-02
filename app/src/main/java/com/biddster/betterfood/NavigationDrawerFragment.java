@@ -23,6 +23,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import static com.biddster.betterfood.Logger.logException;
+
 /**
  * Fragment used for managing interactions for and presentation of a navigation drawer.
  * See the <a href="https://developer.android.com/design/patterns/navigation-drawer.html#Interaction">
@@ -184,6 +186,7 @@ public class NavigationDrawerFragment extends Fragment {
         try {
             mCallbacks = (NavigationDrawerCallbacks) activity;
         } catch (final ClassCastException e) {
+            logException(e);
             throw new ClassCastException("Activity must implement NavigationDrawerCallbacks.");
         }
     }
