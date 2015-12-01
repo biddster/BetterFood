@@ -43,6 +43,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import static com.biddster.betterfood.Logger.NETWORK;
 import static com.biddster.betterfood.Logger.PREFS;
@@ -57,20 +58,23 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
     private static final String goodFoodSearch = "http://www.bbcgoodfood.com/search/recipes?query=";
     private final Set<String> allowedHosts = newHashSet("www.bbcgoodfood.com", "ajax.googleapis.com", "code.jquery.com");
     //    "secure-au.imrworldwide.com",
-    private final Set<String> ignoredHosts = newHashSet(
-            "d3c3cq33003psk.cloudfront.net",
-            "widget.bbclogin.com",
-            "pq-direct.revsci.net",
-            "cdn.krxd.net",
-            "www.googletagservices.com",
-            "widgets.outbrain.com",
-            "b.scorecardresearch.com",
-            "www.google-analytics.com",
-            "d12au6kkv2cs1v.cloudfront.net",
-            "pagead2.googlesyndication.com",
-            "d2gfdmu30u15x7.cloudfront.net",
-            "js.foodity.com",
-            "api-us1.lift.acquia.com");
+    private final Set<Pattern> ignored = newHashSet(
+            Pattern.compile(".*\\.akamaihd\\.net.*"),
+            Pattern.compile(".*\\.acquia\\.com.*"),
+            Pattern.compile(".*\\.bbclogin\\.com.*"),
+            Pattern.compile(".*\\.brightcove\\.com.*"),
+            Pattern.compile(".*\\.cloudfront\\.net.*"),
+            Pattern.compile(".*\\.foodity\\.com.*"),
+            Pattern.compile(".*\\.googletagservices\\.com.*"),
+            Pattern.compile(".*\\.google-analytics\\.com.*"),
+            Pattern.compile(".*\\.googlesyndication\\.com.*"),
+            Pattern.compile(".*\\.imrworldwide\\.com.*"),
+            Pattern.compile(".*\\.inspectlet\\.com.*"),
+            Pattern.compile(".*\\.krxd\\.net.*"),
+            Pattern.compile(".*\\.outbrain\\.com.*"),
+            Pattern.compile(".*\\.revsci\\.net.*"),
+            Pattern.compile(".*\\.scorecardresearch\\.com.*")
+    );
     private WebView webView;
     private String printLink;
     private DownloadManager downloadManager;
@@ -133,9 +137,9 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
             public WebResourceResponse shouldInterceptRequest(final WebView view, final String url) {
                 try {
                     final URL aUrl = new URL(url);
-                    if (!ignoredHosts.contains(aUrl.getHost())) {
+                    if (!isIgnored(url)) {
                         if (!allowedHosts.contains(aUrl.getHost())) {
-                            log(NETWORK, null, "Loading: %s", aUrl.getHost());
+                            log(NETWORK, null, "Unexpected load: %s", aUrl.getHost());
                         }
                         return super.shouldInterceptRequest(view, url);
                     }
@@ -169,10 +173,11 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
                 webView.loadUrl(
                         "javascript:jQuery('#recipe-content,#search-main > .row > .col').addClass('span12');" +
                                 "jQuery('#scroll-wrapper').css('padding-top', '0px');" +
+                                "jQuery('#scroller').css('margin-top', '-18px');" +
                                 "jQuery('.search-header-bar').css('top', '0px');" +
                                 "jQuery('.main-container').css('margin-top', '0px');" +
                                 "jQuery('#more-info-button').click();" +
-                                "jQuery('.page-header-touch,.sharing-options,#nav-touch.tips-carousel," +
+                                "jQuery('.page-header-touch,.ad--mobile-banner,.sharing-options,#nav-touch.tips-carousel," +
                                 "#buy-ingredients,.side-bar-content,.adsense-ads,#footer,.nav-touch,.page-header-touch," +
                                 "#ad-mobile-banner,#ad-leader,#print-logo,#print-ad-leaderboard,#masthead,#nav-toolbar" +
                                 "#bbcgf-search-form,.col span4,aside,#recipetools,#ad-mpu-top').remove();" +
@@ -249,12 +254,21 @@ public class MainActivity extends Activity implements NavigationDrawerFragment.N
         webView.loadUrl(lastPage);
     }
 
+    private boolean isIgnored(final String url) {
+        for (final Pattern p : ignored) {
+            if (p.matcher(url).matches()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private SharedPreferences getAppSharedPreferences() {
         return getSharedPreferences("BF", Context.MODE_PRIVATE);
     }
 
-    private Set<String> newHashSet(final String... entries) {
-        final HashSet<String> set = new HashSet<>();
+    private <T> Set<T> newHashSet(final T... entries) {
+        final HashSet<T> set = new HashSet<>();
         Collections.addAll(set, entries);
         return set;
     }
